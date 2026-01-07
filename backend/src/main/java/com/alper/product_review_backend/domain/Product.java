@@ -34,4 +34,11 @@ public class Product {
 
     @Column(nullable = false)
     private long reviewCount = 0L;
+
+    public Product(String name, String description, String category, BigDecimal price) {
+        this.name = name;
+        this.description = description;
+        this.category = category;
+        this.price = price;
+    }
 }
