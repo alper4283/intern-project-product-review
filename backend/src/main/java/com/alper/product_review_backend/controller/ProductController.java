@@ -4,7 +4,6 @@ import com.alper.product_review_backend.domain.Product;
 import com.alper.product_review_backend.dto.ProductDetailDto;
 import com.alper.product_review_backend.dto.ProductSummaryDto;
 import com.alper.product_review_backend.service.ProductService;
-import com.alper.product_review_backend.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
-    private final ReviewService reviewService; 
 
     /**
      * GET /api/products?page=0&size=10&sort=price,asc
