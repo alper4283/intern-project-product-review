@@ -7,18 +7,40 @@ import { fetchProducts, ProductListItem } from "@/src/api/products";
 export default function HomeScreen() {
   const [items, setItems] = useState<ProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   async function load() {
     try {
       setLoading(true);
       setError(null);
-      const page = await fetchProducts({ page: 0, size: 10, sort: "price,asc" });
+      const page = await fetchProducts({ page: 0, size: 10 });
       setItems(page.content);
+      setCurrentPage(0);
+      setTotalPages(page.totalPages);
     } catch (e: any) {
       setError(e?.message ?? String(e));
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function loadMore() {
+    if (loadingMore || currentPage >= totalPages - 1) return;
+    
+    try {
+      setLoadingMore(true);
+      const nextPage = currentPage + 1;
+      const page = await fetchProducts({ page: nextPage, size: 10 });
+      setItems(prev => [...prev, ...page.content]);
+      setCurrentPage(nextPage);
+      setTotalPages(page.totalPages);
+    } catch (e: any) {
+      console.error('Failed to load more:', e);
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -62,6 +84,15 @@ export default function HomeScreen() {
               </ThemedText>
             </ThemedView>
           )}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 20 }}>
+                <ActivityIndicator />
+              </View>
+            ) : null
+          }
         />
       )}
     </ThemedView>

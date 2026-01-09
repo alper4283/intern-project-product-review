@@ -26,13 +26,17 @@ export async function fetchProducts(params?: {
 }): Promise<PageResponse<ProductListItem>> {
   const page = params?.page ?? 0;
   const size = params?.size ?? 10;
-  const sort = params?.sort ?? "price,asc";
 
-  const qs = new URLSearchParams({
+  const qsParams: Record<string, string> = {
     page: String(page),
     size: String(size),
-    sort,
-  });
+  };
+
+  if (params?.sort) {
+    qsParams.sort = params.sort;
+  }
+
+  const qs = new URLSearchParams(qsParams);
 
   return getJson<PageResponse<ProductListItem>>(`/api/products?${qs.toString()}`);
 }
