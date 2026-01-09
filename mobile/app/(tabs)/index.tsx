@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from "react";
-import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { useState, useCallback } from "react";
+import { ActivityIndicator, FlatList, Pressable, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { fetchProducts, ProductListItem } from "@/src/api/products";
+import { ProductFilterModal } from "@/components/product-filter-modal";
+import { fetchProducts, ProductListItem, SortParam } from "@/src/api/products";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -14,12 +15,14 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [currentSort, setCurrentSort] = useState<SortParam | undefined>(undefined);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (sort?: SortParam) => {
     try {
       setLoading(true);
       setError(null);
-      const page = await fetchProducts({ page: 0, size: 10 });
+      const page = await fetchProducts({ page: 0, size: 10, sort });
       setItems(page.content);
       setCurrentPage(0);
       setTotalPages(page.totalPages);
@@ -36,8 +39,13 @@ export default function HomeScreen() {
     try {
       setLoadingMore(true);
       const nextPage = currentPage + 1;
-      const page = await fetchProducts({ page: nextPage, size: 10 });
-      setItems(prev => [...prev, ...page.content]);
+      const page = await fetchProducts({ page: nextPage, size: 10, sort: currentSort });
+      setItems(prev => {
+        // Deduplicate items by ID to avoid key conflicts
+        const existingIds = new Set(prev.map(item => item.id));
+        const newItems = page.content.filter(item => !existingIds.has(item.id));
+        return [...prev, ...newItems];
+      });
       setCurrentPage(nextPage);
       setTotalPages(page.totalPages);
     } catch (e: any) {
@@ -47,18 +55,31 @@ export default function HomeScreen() {
     }
   }
 
+  function handleApplySort(sort: SortParam | undefined) {
+    setCurrentSort(sort);
+    void load(sort);
+  }
+
   // Refresh products list when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      void load();
-    }, [load])
+      void load(currentSort);
+    }, [load, currentSort])
   );
 
   return (
     <ThemedView style={{ flex: 1, paddingTop: 60, paddingHorizontal: 16 }}>
-      <ThemedText type="title" style={{ marginBottom: 12 }}>
-        Products
-      </ThemedText>
+      <View style={styles.header}>
+        <ThemedText type="title">Products</ThemedText>
+        <Pressable
+          style={styles.filterButton}
+          onPress={() => setShowFilterModal(true)}
+        >
+          <ThemedText style={styles.filterButtonText}>
+            {currentSort ? "⚙️ Sorted" : "⚙️ Sort"}
+          </ThemedText>
+        </Pressable>
+      </View>
 
       {loading && (
         <View style={{ marginTop: 12 }}>
@@ -72,7 +93,7 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">Error</ThemedText>
           <ThemedText>{error}</ThemedText>
 
-          <Pressable onPress={load} style={{ marginTop: 10 }}>
+          <Pressable onPress={() => load(currentSort)} style={{ marginTop: 10 }}>
             <ThemedText type="link">Retry</ThemedText>
           </Pressable>
         </View>
@@ -103,6 +124,32 @@ export default function HomeScreen() {
           }
         />
       )}
+
+      <ProductFilterModal
+        visible={showFilterModal}
+        currentSort={currentSort}
+        onClose={() => setShowFilterModal(false)}
+        onApply={handleApplySort}
+      />
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  filterButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: "rgba(128,128,128,0.15)",
+  },
+  filterButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+});
