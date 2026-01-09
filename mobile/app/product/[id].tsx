@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, ScrollView, View, Pressable } from "react-native";
-import { useLocalSearchParams, Stack, useRouter } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
+import { ActivityIndicator, FlatList, View, Pressable, StyleSheet } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { AddReviewModal } from "@/components/add-review-modal";
 import {
   fetchProductDetail,
   fetchProductReviews,
+  submitReview,
   ProductDetail,
   Review,
 } from "@/src/api/productDetails";
@@ -22,8 +24,9 @@ export default function ProductDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
-  async function loadProduct() {
+  const loadProduct = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -42,7 +45,7 @@ export default function ProductDetailScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [productId]);
 
   async function loadMoreReviews() {
     if (loadingReviews || currentPage >= totalPages - 1) return;
@@ -64,9 +67,27 @@ export default function ProductDetailScreen() {
     }
   }
 
+  async function handleSubmitReview(rating: number, comment: string) {
+    const newReview = await submitReview(productId, { rating, comment });
+    // Add the new review to the top of the list
+    setReviews((prev) => [newReview, ...prev]);
+    // Update product stats
+    if (product) {
+      const newCount = product.reviewCount + 1;
+      const newAverage =
+        (product.averageRating * product.reviewCount + rating) / newCount;
+      setProduct({
+        ...product,
+        reviewCount: newCount,
+        averageRating: newAverage,
+      });
+    }
+    setShowReviewModal(false);
+  }
+
   useEffect(() => {
     void loadProduct();
-  }, [productId]);
+  }, [loadProduct]);
 
   if (loading) {
     return (
@@ -113,6 +134,13 @@ export default function ProductDetailScreen() {
               {product.reviewCount !== 1 ? "s" : ""}
             </ThemedText>
 
+            <Pressable
+              style={styles.addReviewButton}
+              onPress={() => setShowReviewModal(true)}
+            >
+              <ThemedText style={styles.addReviewButtonText}>+ Add Review</ThemedText>
+            </Pressable>
+
             <ThemedText type="subtitle" style={{ marginTop: 24, marginBottom: 12 }}>
               Reviews
             </ThemedText>
@@ -127,7 +155,7 @@ export default function ProductDetailScreen() {
             }}
           >
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
-              <ThemedText type="defaultSemiBold">{item.userName}</ThemedText>
+              <ThemedText type="defaultSemiBold">{item.userName || "Anonymous"}</ThemedText>
               <ThemedText>{"⭐".repeat(item.rating)}</ThemedText>
             </View>
             <ThemedText style={{ marginBottom: 4, lineHeight: 20 }}>{item.comment}</ThemedText>
@@ -152,6 +180,28 @@ export default function ProductDetailScreen() {
           ) : null
         }
       />
+
+      <AddReviewModal
+        visible={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        onSubmit={handleSubmitReview}
+      />
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  addReviewButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 16,
+    alignItems: "center",
+  },
+  addReviewButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+});

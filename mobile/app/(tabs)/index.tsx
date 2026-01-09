@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { fetchProducts, ProductListItem } from "@/src/api/products";
@@ -14,7 +15,7 @@ export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  async function load() {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -27,7 +28,7 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   async function loadMore() {
     if (loadingMore || currentPage >= totalPages - 1) return;
@@ -46,9 +47,12 @@ export default function HomeScreen() {
     }
   }
 
-  useEffect(() => {
-    void load();
-  }, []);
+  // Refresh products list when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load])
+  );
 
   return (
     <ThemedView style={{ flex: 1, paddingTop: 60, paddingHorizontal: 16 }}>
@@ -83,7 +87,7 @@ export default function HomeScreen() {
               <ThemedView style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "rgba(128,128,128,0.3)" }}>
                 <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
                 <ThemedText>
-                  {item.category} • ${item.price} • ⭐ {item.averageRating} ({item.reviewCount})
+                  {item.category} • ${item.price} • ⭐ {item.averageRating.toFixed(2)} ({item.reviewCount})
                 </ThemedText>
               </ThemedView>
             </Pressable>
