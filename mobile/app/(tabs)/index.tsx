@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { useRouter } from "expo-router";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { fetchProducts, ProductListItem } from "@/src/api/products";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [items, setItems] = useState<ProductListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -55,42 +57,45 @@ export default function HomeScreen() {
       </ThemedText>
 
       {loading && (
-        <View style={{ marginTop: 12 }}>
+        <ThemedView style={{ marginTop: 12 }}>
           <ActivityIndicator />
           <ThemedText style={{ marginTop: 8 }}>Loading…</ThemedText>
-        </View>
+        </ThemedView>
       )}
 
       {!!error && (
-        <View style={{ marginTop: 12 }}>
+        <ThemedView style={{ marginTop: 12 }}>
           <ThemedText type="defaultSemiBold">Error</ThemedText>
           <ThemedText>{error}</ThemedText>
 
           <Pressable onPress={load} style={{ marginTop: 10 }}>
             <ThemedText type="link">Retry</ThemedText>
           </Pressable>
-        </View>
+        </ThemedView>
       )}
 
       {!loading && !error && (
         <FlatList
+          style={{ flex: 1 }}
           data={items}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
-            <ThemedView style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "rgba(128,128,128,0.3)" }}>
-              <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-              <ThemedText>
-                {item.category} • ${item.price} • ⭐ {item.averageRating} ({item.reviewCount})
-              </ThemedText>
-            </ThemedView>
+            <Pressable onPress={() => router.push(`/product/${item.id}` as any)}>
+              <ThemedView style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: "rgba(128,128,128,0.3)" }}>
+                <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
+                <ThemedText>
+                  {item.category} • ${item.price} • ⭐ {item.averageRating} ({item.reviewCount})
+                </ThemedText>
+              </ThemedView>
+            </Pressable>
           )}
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             loadingMore ? (
-              <View style={{ paddingVertical: 20 }}>
+              <ThemedView style={{ paddingVertical: 20 }}>
                 <ActivityIndicator />
-              </View>
+              </ThemedView>
             ) : null
           }
         />
