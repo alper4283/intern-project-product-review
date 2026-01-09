@@ -156,7 +156,7 @@ export default function ProductDetailScreen() {
           >
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
               <ThemedText type="defaultSemiBold">{item.userName || "Anonymous"}</ThemedText>
-              <ThemedText>{"⭐".repeat(item.rating)}</ThemedText>
+              <ThemedText>⭐ {item.rating}/5</ThemedText>
             </View>
             <ThemedText style={{ marginBottom: 4, lineHeight: 20 }}>{item.comment}</ThemedText>
             <ThemedText style={{ fontSize: 12, color: "#999" }}>
