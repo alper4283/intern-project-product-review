@@ -57,26 +57,25 @@ export default function HomeScreen() {
       </ThemedText>
 
       {loading && (
-        <ThemedView style={{ marginTop: 12 }}>
+        <View style={{ marginTop: 12 }}>
           <ActivityIndicator />
           <ThemedText style={{ marginTop: 8 }}>Loading…</ThemedText>
-        </ThemedView>
+        </View>
       )}
 
       {!!error && (
-        <ThemedView style={{ marginTop: 12 }}>
+        <View style={{ marginTop: 12 }}>
           <ThemedText type="defaultSemiBold">Error</ThemedText>
           <ThemedText>{error}</ThemedText>
 
           <Pressable onPress={load} style={{ marginTop: 10 }}>
             <ThemedText type="link">Retry</ThemedText>
           </Pressable>
-        </ThemedView>
+        </View>
       )}
 
       {!loading && !error && (
         <FlatList
-          style={{ flex: 1 }}
           data={items}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
@@ -93,9 +92,9 @@ export default function HomeScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             loadingMore ? (
-              <ThemedView style={{ paddingVertical: 20 }}>
+              <View style={{ paddingVertical: 20 }}>
                 <ActivityIndicator />
-              </ThemedView>
+              </View>
             ) : null
           }
         />

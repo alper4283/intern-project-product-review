@@ -89,11 +89,10 @@ export default function ProductDetailScreen() {
   return (
     <ThemedView style={{ flex: 1 }}>
       <FlatList
-        style={{ flex: 1 }}
         data={reviews}
         keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={
-          <ThemedView style={{ paddingTop: 60, paddingHorizontal: 16, paddingBottom: 16, borderBottomWidth: 1, borderColor: "rgba(128,128,128,0.3)" }}>
+          <View style={{ paddingTop: 60, paddingHorizontal: 16, paddingBottom: 16, borderBottomWidth: 1, borderColor: "rgba(128,128,128,0.3)" }}>
             <Pressable onPress={() => router.back()} style={{ marginBottom: 16 }}>
               <ThemedText type="link">← Back to Products</ThemedText>
             </Pressable>
@@ -117,39 +116,39 @@ export default function ProductDetailScreen() {
             <ThemedText type="subtitle" style={{ marginTop: 24, marginBottom: 12 }}>
               Reviews
             </ThemedText>
-          </ThemedView>
+          </View>
         }
         renderItem={({ item }) => (
-          <ThemedView
+          <View
             style={{
               padding: 16,
               borderBottomWidth: 1,
               borderColor: "rgba(128,128,128,0.3)",
             }}
           >
-            <ThemedView style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 8 }}>
               <ThemedText type="defaultSemiBold">{item.userName}</ThemedText>
               <ThemedText>{"⭐".repeat(item.rating)}</ThemedText>
-            </ThemedView>
+            </View>
             <ThemedText style={{ marginBottom: 4, lineHeight: 20 }}>{item.comment}</ThemedText>
             <ThemedText style={{ fontSize: 12, color: "#999" }}>
               {new Date(item.createdAt).toLocaleDateString()}
             </ThemedText>
-          </ThemedView>
+          </View>
         )}
         onEndReached={loadMoreReviews}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           loadingReviews ? (
-            <ThemedView style={{ paddingVertical: 20 }}>
+            <View style={{ paddingVertical: 20 }}>
               <ActivityIndicator />
-            </ThemedView>
+            </View>
           ) : reviews.length === 0 ? (
-            <ThemedView style={{ padding: 16 }}>
+            <View style={{ padding: 16 }}>
               <ThemedText style={{ textAlign: "center", color: "#999" }}>
                 No reviews yet
               </ThemedText>
-            </ThemedView>
+            </View>
           ) : null
         }
       />
