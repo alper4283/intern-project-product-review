@@ -1,11 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { ActivityIndicator, FlatList, Pressable, View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { ProductFilterModal } from "@/components/product-filter-modal";
-import { fetchProducts, ProductListItem, SortParam } from "@/src/api/products";
+import { fetchProducts, ProductListItem, SortParam, Category } from "@/src/api/products";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -17,15 +17,25 @@ export default function HomeScreen() {
   const [totalPages, setTotalPages] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortParam | undefined>(undefined);
+  const [currentCategory, setCurrentCategory] = useState<Category | undefined>(undefined);
 
-  const load = useCallback(async (sort?: SortParam) => {
+  // Client-side filtering by category
+  const filteredItems = useMemo(() => {
+    if (!currentCategory) return items;
+    return items.filter((item) => item.category === currentCategory);
+  }, [items, currentCategory]);
+
+  const load = useCallback(async (sort?: SortParam, category?: Category) => {
     try {
       setLoading(true);
       setError(null);
-      const page = await fetchProducts({ page: 0, size: 10, sort });
+      // When category filter is active, load all products for client-side filtering
+      // Otherwise use pagination
+      const pageSize = category ? 1000 : 10;
+      const page = await fetchProducts({ page: 0, size: pageSize, sort });
       setItems(page.content);
       setCurrentPage(0);
-      setTotalPages(page.totalPages);
+      setTotalPages(category ? 1 : page.totalPages);
     } catch (e: any) {
       setError(e?.message ?? String(e));
     } finally {
@@ -34,7 +44,8 @@ export default function HomeScreen() {
   }, []);
 
   async function loadMore() {
-    if (loadingMore || currentPage >= totalPages - 1) return;
+    // Don't paginate when category filter is active (we already loaded all)
+    if (loadingMore || currentPage >= totalPages - 1 || currentCategory) return;
     
     try {
       setLoadingMore(true);
@@ -55,16 +66,17 @@ export default function HomeScreen() {
     }
   }
 
-  function handleApplySort(sort: SortParam | undefined) {
+  function handleApplySort(sort: SortParam | undefined, category: Category | undefined) {
     setCurrentSort(sort);
-    void load(sort);
+    setCurrentCategory(category);
+    void load(sort, category);
   }
 
   // Refresh products list when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      void load(currentSort);
-    }, [load, currentSort])
+      void load(currentSort, currentCategory);
+    }, [load, currentSort, currentCategory])
   );
 
   return (
@@ -76,7 +88,7 @@ export default function HomeScreen() {
           onPress={() => setShowFilterModal(true)}
         >
           <ThemedText style={styles.filterButtonText}>
-            {currentSort ? "⚙️ Sorted" : "⚙️ Sort"}
+            {currentSort || currentCategory ? "⚙️ Filtered" : "⚙️ Filter"}
           </ThemedText>
         </Pressable>
       </View>
@@ -101,7 +113,7 @@ export default function HomeScreen() {
 
       {!loading && !error && (
         <FlatList
-          data={items}
+          data={filteredItems}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => (
             <Pressable onPress={() => router.push(`/product/${item.id}` as any)}>
@@ -128,6 +140,7 @@ export default function HomeScreen() {
       <ProductFilterModal
         visible={showFilterModal}
         currentSort={currentSort}
+        currentCategory={currentCategory}
         onClose={() => setShowFilterModal(false)}
         onApply={handleApplySort}
       />

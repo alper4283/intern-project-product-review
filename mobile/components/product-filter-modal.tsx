@@ -11,7 +11,7 @@ import {
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { SortParam } from "@/src/api/products";
+import { SortParam, CATEGORIES, Category } from "@/src/api/products";
 
 export type SortOption = {
   label: string;
@@ -31,32 +31,37 @@ const SORT_OPTIONS: SortOption[] = [
 interface ProductFilterModalProps {
   visible: boolean;
   currentSort: SortParam | undefined;
+  currentCategory: Category | undefined;
   onClose: () => void;
-  onApply: (sort: SortParam | undefined) => void;
+  onApply: (sort: SortParam | undefined, category: Category | undefined) => void;
 }
 
 export function ProductFilterModal({
   visible,
   currentSort,
+  currentCategory,
   onClose,
   onApply,
 }: ProductFilterModalProps) {
   const [selectedSort, setSelectedSort] = useState<SortParam | undefined>(currentSort);
+  const [selectedCategory, setSelectedCategory] = useState<Category | undefined>(currentCategory);
 
   const backgroundColor = useThemeColor({}, "background");
 
   function handleApply() {
-    onApply(selectedSort);
+    onApply(selectedSort, selectedCategory);
     onClose();
   }
 
   function handleReset() {
     setSelectedSort(undefined);
+    setSelectedCategory(undefined);
   }
 
-  // Sync selected sort when modal opens with a different currentSort
+  // Sync selected values when modal opens
   function handleModalShow() {
     setSelectedSort(currentSort);
+    setSelectedCategory(currentCategory);
   }
 
   return (
@@ -76,10 +81,58 @@ export function ProductFilterModal({
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Header */}
             <View style={styles.header}>
-              <ThemedText type="subtitle">Sort Products</ThemedText>
+              <ThemedText type="subtitle">Filter & Sort</ThemedText>
               <Pressable onPress={onClose}>
                 <ThemedText style={styles.closeButton}>✕</ThemedText>
               </Pressable>
+            </View>
+
+            {/* Category Filter */}
+            <View style={styles.section}>
+              <ThemedText type="defaultSemiBold" style={styles.label}>
+                Category
+              </ThemedText>
+              <Pressable
+                style={[
+                  styles.optionButton,
+                  selectedCategory === undefined && styles.optionButtonSelected,
+                ]}
+                onPress={() => setSelectedCategory(undefined)}
+              >
+                <ThemedText
+                  style={[
+                    styles.optionText,
+                    selectedCategory === undefined && styles.optionTextSelected,
+                  ]}
+                >
+                  All Categories
+                </ThemedText>
+                {selectedCategory === undefined && (
+                  <ThemedText style={styles.checkmark}>✓</ThemedText>
+                )}
+              </Pressable>
+              {CATEGORIES.map((category) => (
+                <Pressable
+                  key={category}
+                  style={[
+                    styles.optionButton,
+                    selectedCategory === category && styles.optionButtonSelected,
+                  ]}
+                  onPress={() => setSelectedCategory(category)}
+                >
+                  <ThemedText
+                    style={[
+                      styles.optionText,
+                      selectedCategory === category && styles.optionTextSelected,
+                    ]}
+                  >
+                    {category}
+                  </ThemedText>
+                  {selectedCategory === category && (
+                    <ThemedText style={styles.checkmark}>✓</ThemedText>
+                  )}
+                </Pressable>
+              ))}
             </View>
 
             {/* Sort Options */}

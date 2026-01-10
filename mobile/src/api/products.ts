@@ -1,5 +1,16 @@
 import { getJson } from "./client";
 
+export const CATEGORIES = [
+  "Phones",
+  "Laptops",
+  "Tablets",
+  "Audio",
+  "Wearables",
+  "Accessories",
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
 export type SortParam = `${string},${"asc" | "desc"}`;
 
 export interface ProductListItem {
