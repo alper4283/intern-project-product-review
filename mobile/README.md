@@ -1,50 +1,83 @@
-# Welcome to your Expo app 👋
+# 📱 Product Review Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform mobile application built with **React Native** and **Expo** for browsing products, submitting reviews, and viewing ratings.
 
-## Get started
+## 🎯 Features
 
-1. Install dependencies
+- **Product List** – Browse all products with sorting and category filtering
+- **Product Details** – View product info, average rating, and all reviews
+- **Add Review** – Submit star ratings (1–5) with optional comments
+- **Cross-Platform** – Runs on iOS, Android, and web
 
-   ```bash
-   npm install
-   ```
+## 🛠️ Tech Stack
 
-2. Start the app
+- **React Native** with Expo
+- **TypeScript**
+- **Expo Router** (file-based routing)
+- **React Navigation** (screen focus handling)
 
-   ```bash
-   npx expo start
-   ```
+## 📁 Project Structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+mobile/
+├── app/                    # Screens (file-based routing)
+│   ├── (tabs)/             # Tab navigation
+│   │   └── index.tsx       # Product list screen
+│   └── product/
+│       └── [id].tsx        # Product details screen
+├── components/             # Reusable UI components
+│   ├── add-review-modal.tsx
+│   ├── product-filter-modal.tsx
+│   └── ...
+├── src/
+│   └── api/                # API client and endpoints
+│       ├── client.ts       # Fetch wrapper
+│       ├── products.ts     # Product list API
+│       └── productDetails.ts # Product details & reviews API
+└── constants/              # Theme and config
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🚀 Getting Started
 
-## Learn more
+### Prerequisites
 
-To learn more about developing your project with Expo, look at the following resources:
+- Node.js (v18+)
+- npm or yarn
+- Expo Go app on your phone (for testing)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Installation
 
-## Join the community
+```bash
+# Navigate to mobile directory
+cd mobile
 
-Join our community of developers creating universal apps.
+# Install dependencies
+npm install
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Start the development server
+npx expo start
+```
+
+### Running the App
+
+After starting, you can open the app in:
+- **Expo Go** – Scan the QR code with your phone
+- **Android Emulator** – Press `a` in the terminal
+- **iOS Simulator** – Press `i` in the terminal (macOS only)
+- **Web Browser** – Press `w` in the terminal
+
+## 🔗 API Configuration
+
+The backend API URL is configured in `src/api/client.ts`:
+
+```typescript
+export const API_BASE_URL = "http://34.118.98.3";
+```
+
+Update this if running the backend locally or on a different server.
+
+## 📌 Notes
+
+- **Authentication** is not included (out of scope)
+- Category filtering is done client-side
+- Sorting is handled by the backend API
