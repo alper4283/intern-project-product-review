@@ -2,6 +2,8 @@ package com.alper.product_review_backend.repository;
 
 import com.alper.product_review_backend.domain.Product;
 import com.alper.product_review_backend.domain.Review;
+import com.alper.product_review_backend.domain.Role;
+import com.alper.product_review_backend.domain.User;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -21,8 +23,15 @@ class ReviewRepositoryTest {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     void findByProductOrderByCreatedAtDesc_returnsNewestFirst() {
+        // Create test user
+        User user = new User("testuser", "test@example.com", "password123", Role.USER);
+        user = userRepository.save(user);
+
         Product product = new Product(
                 "Repo Test Product",
                 "Description",
@@ -31,10 +40,10 @@ class ReviewRepositoryTest {
         );
         product = productRepository.save(product);
 
-        Review oldReview = new Review(product, 3, "Old");
+        Review oldReview = new Review(product, user, 3, "Old");
         oldReview.setCreatedAt(Instant.now().minus(1, ChronoUnit.DAYS));
 
-        Review newReview = new Review(product, 5, "New");
+        Review newReview = new Review(product, user, 5, "New");
         newReview.setCreatedAt(Instant.now());
 
         reviewRepository.save(oldReview);

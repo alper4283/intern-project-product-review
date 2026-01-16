@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 
 
 @Service
@@ -23,5 +25,11 @@ public class ProductService {
     public Product getProductOrThrow(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + id));
+    }
+
+    @Transactional
+    public Product createProduct(String name, String description, String category, BigDecimal price) {
+        Product product = new Product(name, description, category, price);
+        return productRepository.save(product);
     }
 }

@@ -1,21 +1,60 @@
 package com.alper.product_review_backend.config;
 
 import com.alper.product_review_backend.domain.Product;
+import com.alper.product_review_backend.domain.Role;
+import com.alper.product_review_backend.domain.User;
 import com.alper.product_review_backend.repository.ProductRepository;
+import com.alper.product_review_backend.repository.UserRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
+        initializeUsers();
+        initializeProducts();
+    }
+
+    private void initializeUsers() {
+        if (userRepository.count() > 0) {
+            return;
+        }
+
+        // Create default admin user for development
+        User admin = new User(
+                "admin",
+                "admin@example.com",
+                passwordEncoder.encode("admin123"),
+                Role.ADMIN
+        );
+        userRepository.save(admin);
+        log.info("Created default admin user: admin / admin123");
+
+        // Create default test user
+        User user = new User(
+                "user",
+                "user@example.com",
+                passwordEncoder.encode("user123"),
+                Role.USER
+        );
+        userRepository.save(user);
+        log.info("Created default test user: user / user123");
+    }
+
+    private void initializeProducts() {
         if (productRepository.count() > 0) {
             return; // don't insert duplicates on dev restarts within same run
         }
@@ -61,5 +100,6 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         productRepository.saveAll(products);
+        log.info("Initialized {} products", products.size());
     }
 }

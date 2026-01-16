@@ -26,6 +26,11 @@ public class Review {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    // Many reviews belong to one user
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column(nullable = false)
     private int rating;  // 1–5
 
@@ -35,8 +40,9 @@ public class Review {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    public Review(Product product, int rating, String comment) {
+    public Review(Product product, User user, int rating, String comment) {
         this.product = product;
+        this.user = user;
         this.rating = rating;
         this.comment = comment;
     }

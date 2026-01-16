@@ -2,6 +2,7 @@ package com.alper.product_review_backend.service;
 
 import com.alper.product_review_backend.domain.Product;
 import com.alper.product_review_backend.domain.Review;
+import com.alper.product_review_backend.domain.User;
 import com.alper.product_review_backend.repository.ProductRepository;
 import com.alper.product_review_backend.repository.ReviewRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,7 +30,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public Review addReview(Long productId, int rating, String comment) {
+    public Review addReview(Long productId, User user, int rating, String comment) {
         if (rating < 1 || rating > 5) {
             throw new IllegalArgumentException("Rating must be between 1 and 5");
         }
@@ -37,8 +38,8 @@ public class ReviewService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found: " + productId));
 
-        // 1) Save the new review
-        Review review = new Review(product, rating, comment);
+        // 1) Save the new review with user
+        Review review = new Review(product, user, rating, comment);
         reviewRepository.save(review);
 
         // 2) Update aggregate fields on Product
